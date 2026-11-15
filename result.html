@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmotionAI | Explainable Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<nav class="navbar">
+    <div class="logo"><span class="logo-icon">◉</span> EmotionAI</div>
+    <a href="/" class="nav-button">← New Analysis</a>
+</nav>
+
+<main class="result-page">
+    <section class="result-header">
+        <div class="small-title">ANALYSIS COMPLETE • XAI ENABLED</div>
+        <h1>Facial Expression Result</h1>
+        <p>Emotion classification, confidence, explainability and a project-level expression risk indicator.</p>
+    </section>
+
+    <section class="result-layout">
+        <div class="image-result-card">
+            <div class="image-label">ANALYZED IMAGE</div>
+            <div class="image-container">
+                <img src="{{ url_for('static', filename='uploads/' + image_filename) }}" alt="Uploaded facial image">
+            </div>
+            <div class="face-status"><span class="status-dot"></span> Face detected successfully</div>
+        </div>
+
+        <div class="prediction-card">
+            <div class="prediction-label">PREDICTED EMOTION</div>
+            <div class="emotion-result">
+                {% if emotion == "happy" %}<span class="emotion-icon">😊</span>
+                {% elif emotion == "sad" %}<span class="emotion-icon">😢</span>
+                {% elif emotion == "angry" %}<span class="emotion-icon">😠</span>
+                {% elif emotion == "fear" %}<span class="emotion-icon">😨</span>
+                {% elif emotion == "disgust" %}<span class="emotion-icon">🤢</span>
+                {% elif emotion == "surprise" %}<span class="emotion-icon">😲</span>
+                {% else %}<span class="emotion-icon">😐</span>{% endif %}
+                <span class="emotion-name">{{ emotion|capitalize }}</span>
+            </div>
+
+            <div class="confidence-title">MODEL CONFIDENCE</div>
+            <div class="confidence-value">{{ "%.2f"|format(confidence) }}%</div>
+            <div class="confidence-bar"><div class="confidence-fill" style="--confidence-width: {{ confidence }}%;"></div></div>
+
+            <div class="risk-result-card {{ risk.class }}">
+                <div class="risk-result-icon">{{ risk.icon }}</div>
+                <div>
+                    <div class="risk-result-label">EXPRESSION RISK INDICATOR</div>
+                    <div class="risk-result-level">{{ risk.level }}</div>
+                    <p>{{ risk.description }}</p>
+                </div>
+            </div>
+
+            <div class="scores">
+                <h3>Emotion Probabilities</h3>
+                {% for label, score in scores.items() %}
+                <div class="score-row">
+                    <div class="score-name">{{ label|capitalize }}</div>
+                    <div class="score-bar"><div class="score-fill" style="--score-width: {{ score }}%;"></div></div>
+                    <div class="score-number">{{ "%.1f"|format(score) }}%</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section class="xai-section">
+        <div class="xai-heading">
+            <div class="small-title">EXPLAINABLE AI</div>
+            <h2>Why did the model make this prediction?</h2>
+            <p>Grad-CAM highlights image regions that contributed most strongly to the selected emotion prediction.</p>
+        </div>
+
+        {% if gradcam_available %}
+        <div class="xai-grid">
+            <div class="xai-card">
+                <div class="xai-card-label">DETECTED FACE REGION</div>
+                <div class="xai-image-wrap">
+                    <img src="{{ url_for('static', filename='uploads/' + face_filename) }}" alt="Detected face region">
+                </div>
+            </div>
+            <div class="xai-card">
+                <div class="xai-card-label">GRAD-CAM HEATMAP OVERLAY</div>
+                <div class="xai-image-wrap">
+                    <img src="{{ url_for('static', filename='uploads/' + heatmap_filename) }}" alt="Grad-CAM explanation heatmap">
+                </div>
+            </div>
+        </div>
+        <div class="xai-legend">
+            <span><i class="legend-hot"></i> Stronger contribution</span>
+            <span><i class="legend-cool"></i> Lower contribution</span>
+        </div>
+        {% else %}
+        <div class="xai-unavailable">
+            <strong>Grad-CAM could not be generated for this model configuration.</strong>
+            <p>The emotion prediction is still available. The XAI layer will activate automatically when a compatible convolutional feature layer is found.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="result-note">
+        <div class="note-icon">AI</div>
+        <div>
+            <strong>How to interpret this result</strong>
+            <p>The heatmap is an explanation aid, not proof that a specific facial region is the sole cause of the prediction. The risk indicator is a project-level, non-clinical heuristic based on the predicted expression and confidence; it does not diagnose mental health or personal safety.</p>
+        </div>
+    </section>
+
+    <a href="/" class="primary-button result-button">Analyze Another Image →</a>
+</main>
+
+<footer><p>EmotionAI • Explainable Facial Emotion Recognition</p><p>CNN + Grad-CAM + Risk Indicator + Flask</p></footer>
+</body>
+</html>
